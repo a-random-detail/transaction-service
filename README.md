@@ -43,6 +43,7 @@
       App --> Redis
       App --> WriteDB[Write DB]
       App --> ReadReplica[Read Replica]
+      WriteDB -->|sync| ReadReplica
   ```
 
   #### Database
