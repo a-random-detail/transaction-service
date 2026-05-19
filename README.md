@@ -48,10 +48,11 @@
   Tests
 
   Integration tests use Testcontainers — Docker must be running, no external DB setup needed.
-
+  ```bash
   dotnet test                                                                 # all
   dotnet test TransactionService.Test/TransactionService.Test.csproj         # acceptance/functional tests 
   dotnet test TransactionService.Domain.Test/TransactionService.Domain.Test.csproj  # unit
+  ```
 
   ## API
 
