@@ -1,5 +1,4 @@
 # Transaction Service
-# TransactionService
 
 ## Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
