@@ -4,6 +4,8 @@ using DbUp;
 using TransactionService.Configuration;
 using Npgsql;
 using Serilog;
+using StackExchange.Redis;
+using TransactionService.Domain.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +18,10 @@ builder.Services.AddOpenApi();
 // Add services to the container.
 var appConfig = new AppConfig();
 builder.Services.AddSingleton(appConfig);
-builder.Services.AddScoped<IDbConnection>(_ => new NpgsqlConnection(appConfig.GetConnectionString()));
+builder.Services.AddSingleton<IWriteConnectionFactory>(new WriteConnectionFactory(appConfig.WriteConnectionString));
+builder.Services.AddSingleton<IReadConnectionFactory>(new ReadConnectionFactory(appConfig.ReadConnectionString));
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(appConfig.RedisConnectionString));
+builder.Services.AddSingleton<ICacheService, CacheService>();
 
 var app = builder.Build();
 
@@ -33,7 +38,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 DeployChanges.To
-    .PostgresqlDatabase(appConfig.GetConnectionString())
+    .PostgresqlDatabase(appConfig.WriteConnectionString)
     .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
     .LogToConsole()
     .Build()

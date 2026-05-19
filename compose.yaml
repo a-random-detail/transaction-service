@@ -5,13 +5,13 @@
       context: .
       dockerfile: TransactionService/Dockerfile
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=transactions
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - WRITE_DB_CONNSTRING=Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres
+      - READ_DB_CONNSTRING=Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres
+      - REDIS_CONNSTRING=redis:6379
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -32,5 +32,18 @@
       timeout: 5s
       retries: 5
   
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
 volumes:
   postgres_data:
+  redis_data:
