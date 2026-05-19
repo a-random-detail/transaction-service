@@ -3,21 +3,20 @@ using System.Reflection;
 using DbUp;
 using TransactionService.Configuration;
 using Npgsql;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Host.UseSerilog((ctx, config) => config.ReadFrom.Configuration(ctx.Configuration));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Add services to the container.
 var appConfig = new AppConfig();
 builder.Services.AddSingleton(appConfig);
-builder.Services.AddScoped<IDbConnection>(_ =>
-{
-    return new NpgsqlConnection(appConfig.GetConnectionString());
-});
+builder.Services.AddScoped<IDbConnection>(_ => new NpgsqlConnection(appConfig.GetConnectionString()));
 
 var app = builder.Build();
 

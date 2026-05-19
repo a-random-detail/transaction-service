@@ -20,4 +20,13 @@
         <Using Include="NUnit.Framework"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Core\" />
+      <Folder Include="Entities\" />
+      <Folder Include="Handlers\Commands\" />
+      <Folder Include="Handlers\Queries\" />
+      <Folder Include="Repositories\" />
+      <Folder Include="Validators\" />
+    </ItemGroup>
+
 </Project>
