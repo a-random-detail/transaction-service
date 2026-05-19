@@ -11,7 +11,7 @@
   |---|-------------------------------------------------------------------|
 | `TransactionService` | ASP.NET Core Web API                                              |
 | `TransactionService.Domain` | Domain logic, data access (Dapper + Npgsql), DB migrations (DbUp) |
-| `TransactionService.Test` | Acceptance tests (Testcontainers, Respawn)                        |
+| `TransactionService.Test` | Acceptance/Functional tests (Testcontainers, Respawn)             |
 | `TransactionService.Domain.Test` | Unit tests                                                        |
 
 ## Running Locally
@@ -51,7 +51,7 @@
   Integration tests use Testcontainers — Docker must be running, no external DB setup needed.
 
   dotnet test                                                                 # all
-  dotnet test TransactionService.Test/TransactionService.Test.csproj         # acceptance tests 
+  dotnet test TransactionService.Test/TransactionService.Test.csproj         # acceptance/functional tests 
   dotnet test TransactionService.Domain.Test/TransactionService.Domain.Test.csproj  # unit
 
   ## API
