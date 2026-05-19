@@ -25,27 +25,42 @@
   Option 2 — dotnet run + Postgres only
 
   ```bash
-  docker compose up postgres -d
+  docker compose up postgres redis -d
 
-  export DB_HOST=localhost DB_PORT=5432 DB_NAME=transactions DB_USER=postgres DB_PASSWORD=postgres
+  export WRITE_DB_CONNSTRING="Host=localhost;Port=5432;Database=transactions;Username=postgres;Password=postgres"
+  export READ_DB_CONNSTRING="Host=localhost;Port=5432;Database=transactions;Username=postgres;Password=postgres"
+  export REDIS_CONNSTRING="localhost:6379"
+  
   dotnet run --project TransactionService/TransactionService.csproj
   ```
 
   API: http://localhost:5297
 
-  Database
+  ### Infrastructure
 
-  Configured via environment variables. Migrations run automatically on startup via DbUp from TransactionService/Scripts/.
+  ```mermaid
+  graph LR
+      App --> Redis
+      App --> WriteDB[Write DB]
+      App --> ReadReplica[Read Replica]
+  ```
 
-| Variable | Value |
+  #### Database
+  - Migrations run automatically on startup via DbUp from TransactionService/Scripts/. Migrations run against the write connection only —
+  read replicas sync automatically (in production)
+
+  | Variable | Value |
   |---|---|
-| `DB_HOST` | `postgres` (compose) / `localhost` (local) |
-| `DB_PORT` | `5432` |
-| `DB_NAME` | `transactions` |
-| `DB_USER` | `postgres` |
-| `DB_PASSWORD` | `postgres` |
+  | `WRITE_DB_CONNSTRING` | `Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres` |
+  | `READ_DB_CONNSTRING` | `Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres` |
 
-  Tests
+  #### Cache
+
+  | Variable | Value |
+  |---|---|
+  | `REDIS_CONNSTRING` | `redis:6379` |
+
+  ### Tests
 
   Integration tests use Testcontainers — Docker must be running, no external DB setup needed.
   ```bash
