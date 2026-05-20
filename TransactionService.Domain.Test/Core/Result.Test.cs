@@ -1,3 +1,4 @@
+using System.Reflection;
 using TransactionService.Domain.Core;
 
 namespace TransactionService.Domain.Test.Core;
@@ -37,4 +38,14 @@ public class Result_Test
         Assert.That(result.GetErrors(), Is.EqualTo(errors.ToList()));
         Assert.That(result.GetValue(), Is.EqualTo(default(int)));
     }
+    
+    [Test]
+    public void Result_Cannot_Be_Instantiated_Directly()
+    {
+        var constructor = typeof(Result<string>)
+            .GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, Type.EmptyTypes);
+        
+        Assert.That(constructor?.IsPrivate, Is.True);
+    }
+
 }

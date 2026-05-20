@@ -1,3 +1,4 @@
+using System.Reflection;
 using TransactionService.Contracts;
 
 namespace TransactionService.Test.Contracts;
@@ -36,5 +37,14 @@ public class ApiResponse_Test
         Assert.That(result.Errors.Count, Is.EqualTo(errors.Length));
         Assert.That(result.Errors, Is.EqualTo(errors.ToList()));
         Assert.That(result.Data, Is.EqualTo(default(int)));
+    }
+
+    [Test]
+    public void ApiResponse_Cannot_Be_Instantiated_Directly()
+    {
+        var constructor = typeof(ApiResponse<string>)
+            .GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, Type.EmptyTypes);
+        
+        Assert.That(constructor?.IsPrivate, Is.True);
     }
 }
