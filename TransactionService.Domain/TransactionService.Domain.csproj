@@ -14,9 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Handlers\Commands\" />
       <Folder Include="Handlers\Queries\" />
-      <Folder Include="Repositories\" />
       <Folder Include="Validators\" />
     </ItemGroup>
 

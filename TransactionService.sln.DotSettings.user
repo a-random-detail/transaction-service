@@ -3,5 +3,6 @@
   &lt;TestAncestor&gt;
     &lt;TestId&gt;NUnit3x::BA3ADB08-10B8-4F67-BECC-9FCD25D101BB::net10.0::TransactionService.Domain.Test.Core.Result_Test&lt;/TestId&gt;
     &lt;TestId&gt;NUnit3x::15E288C3-566D-4F3E-89CA-60FA8CD2C03D::net10.0::TransactionService.Test.Contracts.ApiResponse_Test&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::15E288C3-566D-4F3E-89CA-60FA8CD2C03D::net10.0::TransactionService.Test.Transactions.Create.CreateTransaction_Test&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
