@@ -9,7 +9,7 @@ public class TransactionTestRepository(string ConnectionString)
     public async Task<TransactionDto?> GetByIdAsync(Guid id)
     {
         await using var connection = new NpgsqlConnection(ConnectionString);
-        return await connection.QuerySingleOrDefaultAsync<TransactionDto>("Select * from transaction where id = @id",
+        return await connection.QuerySingleOrDefaultAsync<TransactionDto>("Select * from transactions where id = @id",
             new { id });
     }
 }

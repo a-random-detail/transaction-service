@@ -56,17 +56,25 @@ public class CreateTransaction_Test
         
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
-        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponse<TransactionDto>>();
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<TransactionDto>>();
         
         
         Assert.That(responsePayload, Is.Not.Null);
         Assert.That(responsePayload.Success, Is.True);
         
-        var transaction = responsePayload?.Data;
+        var transaction = responsePayload.Data;
         Assert.That(transaction, Is.Not.Null);
+        Assert.That(transaction.Description, Is.EqualTo(payload.Description));
+        Assert.That(transaction.TransactionDate, Is.EqualTo(payload.TransactionDate));
+        Assert.That(transaction.Amount, Is.EqualTo(payload.Amount));
+
 
         var persistedTransaction = await _testRepository.GetByIdAsync(transaction.Id);
         Assert.That(transaction, Is.EqualTo(persistedTransaction));
+        
+        Assert.That(persistedTransaction?.Description, Is.EqualTo(payload.Description));
+        Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(payload.TransactionDate));
+        Assert.That(persistedTransaction?.Amount, Is.EqualTo(payload.Amount));
     }
 
 }

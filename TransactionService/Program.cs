@@ -1,11 +1,17 @@
 using System.Data;
 using System.Reflection;
+using Dapper;
 using DbUp;
 using TransactionService.Configuration;
 using Npgsql;
 using Serilog;
 using StackExchange.Redis;
+using TransactionService.Domain.Core;
+using TransactionService.Domain.Entities;
+using TransactionService.Domain.Handlers;
+using TransactionService.Domain.Handlers.Commands;
 using TransactionService.Domain.Infrastructure;
+using TransactionService.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +27,13 @@ builder.Services.AddSingleton(appConfig);
 builder.Services.AddSingleton<IWriteConnectionFactory>(new WriteConnectionFactory(appConfig.WriteConnectionString));
 builder.Services.AddSingleton<IReadConnectionFactory>(new ReadConnectionFactory(appConfig.ReadConnectionString));
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(appConfig.RedisConnectionString));
-builder.Services.AddSingleton<ICacheService, CacheService>();
+builder.Services.AddSingleton<ICacheService, CacheService>();  
+builder.Services.AddScoped<ITransactionWriteRepository, TransactionWriteRepository>();
+builder.Services.AddScoped<ICommandHandler<CreateTransactionCommand, Result<TransactionDto>>, CreateTransactionHandler>();
+
+
+// Handle snake case to Pascal Case field matching
+DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var app = builder.Build();
 

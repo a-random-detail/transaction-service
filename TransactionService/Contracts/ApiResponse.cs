@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TransactionService.Contracts;
 
 public class ApiResponse<T>
