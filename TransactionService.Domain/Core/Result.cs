@@ -5,7 +5,7 @@ public class Result<T>
     private Result() { }
 
     private T? Value { get; init; }
-    private List<string> Errors { get; init; } = [];
+    private IReadOnlyList<string> Errors { get; init; } = [];
     
     public bool Success => Errors.Count == 0;
     public T? GetValue() => Success ? Value : default;
