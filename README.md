@@ -22,7 +22,7 @@
   ```
   API: http://localhost:8080
 
-  Option 2 — dotnet run + Postgres only
+  Option 2 — dotnet run + Postgres and redis only
 
   ```bash
   docker compose up postgres redis -d
