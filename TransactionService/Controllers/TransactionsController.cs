@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using TransactionService.Contracts;
 using TransactionService.Domain.Entities;
 
 namespace TransactionService.Controllers;
