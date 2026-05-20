@@ -41,7 +41,7 @@ public class CreateTransaction_Test
     public async Task CreateTransaction_Returns_201_On_Success()
     {
         var payload =
-            new CreateTransactionRequest("A lot of staplers", new DateOnly(2026, 5, 19), 55.55m);
+            new CreateTransactionRequest("A lot of staplers", "2026-05-13", 55.55m);
         var response = await _client.PostAsJsonAsync(_postTransactionsEndpoint, payload);
         
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
@@ -51,7 +51,7 @@ public class CreateTransaction_Test
     public async Task CreateTransaction_Persists_To_Database()
     {
         var payload =
-            new CreateTransactionRequest("A lot of staplers", new DateOnly(2026, 5, 19), 55.55m);
+            new CreateTransactionRequest("A lot of staplers", "2026-05-01", 55.55m);
         var response = await _client.PostAsJsonAsync(_postTransactionsEndpoint, payload);
         
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
@@ -65,7 +65,7 @@ public class CreateTransaction_Test
         var transaction = responsePayload.Data;
         Assert.That(transaction, Is.Not.Null);
         Assert.That(transaction.Description, Is.EqualTo(payload.Description));
-        Assert.That(transaction.TransactionDate, Is.EqualTo(payload.TransactionDate));
+        Assert.That(transaction.TransactionDate, Is.EqualTo(ParseStringToDateOnly(payload.TransactionDate)));
         Assert.That(transaction.Amount, Is.EqualTo(payload.Amount));
 
 
@@ -73,8 +73,13 @@ public class CreateTransaction_Test
         Assert.That(transaction, Is.EqualTo(persistedTransaction));
         
         Assert.That(persistedTransaction?.Description, Is.EqualTo(payload.Description));
-        Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(payload.TransactionDate));
+        Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(ParseStringToDateOnly(payload.TransactionDate)));
         Assert.That(persistedTransaction?.Amount, Is.EqualTo(payload.Amount));
+    }
+
+    private DateOnly ParseStringToDateOnly(string date)
+    {
+        return DateOnly.Parse(date);
     }
 
 }
