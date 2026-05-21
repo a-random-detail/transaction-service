@@ -12,6 +12,7 @@ using TransactionService.Domain.Handlers;
 using TransactionService.Domain.Handlers.Commands;
 using TransactionService.Domain.Infrastructure;
 using TransactionService.Domain.Repositories;
+using TransactionService.Domain.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Conn
 builder.Services.AddSingleton<ICacheService, CacheService>();  
 builder.Services.AddScoped<ITransactionWriteRepository, TransactionWriteRepository>();
 builder.Services.AddScoped<ICommandHandler<CreateTransactionCommand, Result<TransactionDto>>, CreateTransactionHandler>();
+builder.Services.AddTransient<ITransactionValidator, TransactionValidator>();
 
 
 // Handle snake case to Pascal Case field matching

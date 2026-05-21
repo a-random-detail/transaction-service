@@ -4,6 +4,7 @@ using TransactionService.Domain.Core;
 using TransactionService.Domain.Entities;
 using TransactionService.Domain.Handlers;
 using TransactionService.Domain.Handlers.Commands;
+using TransactionService.Domain.Validators;
 
 namespace TransactionService.Controllers;
 
@@ -12,9 +13,11 @@ namespace TransactionService.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> _createTransactionHandler;
-    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler)
+    private readonly ITransactionValidator _transactionValidator;
+    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler, ITransactionValidator transactionValidator)
     {
         _createTransactionHandler = createTransactionHandler;
+        _transactionValidator = transactionValidator;
     }
 
     [HttpGet("/{id}")]
@@ -28,6 +31,12 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
     {
+        var requestIsValid = _transactionValidator.IsValid(request, out List<string> errors);
+
+        if (!requestIsValid)
+        {
+            return BadRequest(ApiResponse<TransactionDto>.Fail(errors.ToArray()));
+        }
 
         var command = CreateTransactionCommand.FromRequest(request);
 

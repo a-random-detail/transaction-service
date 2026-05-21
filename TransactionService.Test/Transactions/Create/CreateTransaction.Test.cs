@@ -58,7 +58,6 @@ public class CreateTransaction_Test
 
         var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<TransactionDto>>();
         
-        
         Assert.That(responsePayload, Is.Not.Null);
         Assert.That(responsePayload.Success, Is.True);
         
@@ -75,6 +74,66 @@ public class CreateTransaction_Test
         Assert.That(persistedTransaction?.Description, Is.EqualTo(payload.Description));
         Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(ParseStringToDateOnly(payload.TransactionDate)));
         Assert.That(persistedTransaction?.Amount, Is.EqualTo(payload.Amount));
+    }
+
+    [Test]
+    public async Task CreateTransaction_Returns_Appropriate_Error_When_Description_Is_Too_Long()
+    {
+        var payload =
+            new CreateTransactionRequest(new string('x', 51), "2026-05-01", 55.55m);
+        var response = await _client.PostAsJsonAsync(_postTransactionsEndpoint, payload);
+        
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<TransactionDto>>();
+        Assert.That(responsePayload, Is.Not.Null);
+        
+        Assert.That(responsePayload.Success, Is.False);
+        Assert.That(responsePayload.Errors.Count, Is.EqualTo(1));
+        Assert.That(responsePayload.Errors.Contains("Description must be 50 characters or less in length."), Is.True);
+    }
+    
+    [TestCase("05-21-2026")]
+    [TestCase("21-05-2026")]
+    [TestCase("2026/05/21")]
+    [TestCase("20260521")]
+    [TestCase("2026-13-01")]
+    [TestCase("2026-05-32")]
+    [TestCase("not-a-date")]
+    [TestCase("")]
+    [TestCase("2026-5-1")]
+    public async Task CreateTransaction_Returns_Appropriate_Error_When_TransactionDate_Is_Invalid_Format(string transactionDate)
+    {
+        var payload =
+            new CreateTransactionRequest("this is a description", transactionDate, 55.55m);
+        var response = await _client.PostAsJsonAsync(_postTransactionsEndpoint, payload);
+        
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<TransactionDto>>();
+        Assert.That(responsePayload, Is.Not.Null);
+        
+        Assert.That(responsePayload.Success, Is.False);
+        Assert.That(responsePayload.Errors.Count, Is.EqualTo(1));
+        Assert.That(responsePayload.Errors.Contains("Transaction date must be in yyyy-MM-dd format."), Is.True);
+    }
+
+    [TestCase(0)]
+    [TestCase(-1.00)]
+    [TestCase(-0.01)]
+    [TestCase(0.001)]
+    [TestCase(1.999)]
+    public async Task CreateTransaction_Returns_Appropriate_Error_When_Amount_Is_Invalid(decimal amount)
+    {
+        var payload =
+            new CreateTransactionRequest("this is a description", "2025-11-14", amount);
+        var response = await _client.PostAsJsonAsync(_postTransactionsEndpoint, payload);
+        
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<TransactionDto>>();
+        Assert.That(responsePayload, Is.Not.Null);
+        
+        Assert.That(responsePayload.Success, Is.False);
+        Assert.That(responsePayload.Errors.Count, Is.EqualTo(1));
+        Assert.That(responsePayload.Errors.Contains("Amount must be a positive number rounded to two decimal places (ex. 99.99)."), Is.True);
     }
 
     private DateOnly ParseStringToDateOnly(string date)
