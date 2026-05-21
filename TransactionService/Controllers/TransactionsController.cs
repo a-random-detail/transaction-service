@@ -4,6 +4,7 @@ using TransactionService.Domain.Core;
 using TransactionService.Domain.Entities;
 using TransactionService.Domain.Handlers;
 using TransactionService.Domain.Handlers.Commands;
+using TransactionService.Domain.Handlers.Queries;
 using TransactionService.Domain.Validators;
 
 namespace TransactionService.Controllers;
@@ -13,18 +14,23 @@ namespace TransactionService.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> _createTransactionHandler;
+    private readonly IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>> _getTransactionByIdHandler;
     private readonly ITransactionValidator _transactionValidator;
-    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler, ITransactionValidator transactionValidator)
+    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler, ITransactionValidator transactionValidator, IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>> getTransactionByIdHandler)
     {
         _createTransactionHandler = createTransactionHandler;
         _transactionValidator = transactionValidator;
+        _getTransactionByIdHandler = getTransactionByIdHandler;
     }
 
-    [HttpGet("/{id}")]
-    public async Task<IActionResult> GetTransactionById([FromRoute] string id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetTransactionById([FromRoute] Guid id)
     {
-        // return Ok(ApiResponse<string>.OK($"hello, {id}!"));
-        throw new NotImplementedException();
+        var result = await _getTransactionByIdHandler.HandleAsync(new GetTransactionByIdQuery(id));
+        if (!result.Success || result.GetValue() == null)
+            return NotFound();
+        
+        return Ok(ApiResponse<TransactionDto>.OK(result.GetValue()));
     }
     
 

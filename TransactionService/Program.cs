@@ -10,6 +10,7 @@ using TransactionService.Domain.Core;
 using TransactionService.Domain.Entities;
 using TransactionService.Domain.Handlers;
 using TransactionService.Domain.Handlers.Commands;
+using TransactionService.Domain.Handlers.Queries;
 using TransactionService.Domain.Infrastructure;
 using TransactionService.Domain.Repositories;
 using TransactionService.Domain.Validators;
@@ -25,12 +26,21 @@ builder.Services.AddOpenApi();
 // Add services to the container.
 var appConfig = new AppConfig();
 builder.Services.AddSingleton(appConfig);
+
+// Database Services
 builder.Services.AddSingleton<IWriteConnectionFactory>(new WriteConnectionFactory(appConfig.WriteConnectionString));
 builder.Services.AddSingleton<IReadConnectionFactory>(new ReadConnectionFactory(appConfig.ReadConnectionString));
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(appConfig.RedisConnectionString));
 builder.Services.AddSingleton<ICacheService, CacheService>();  
 builder.Services.AddScoped<ITransactionWriteRepository, TransactionWriteRepository>();
+builder.Services.AddScoped<ITransactionReadRepository, TransactionReadRepository>();
+
+// Handlers
 builder.Services.AddScoped<ICommandHandler<CreateTransactionCommand, Result<TransactionDto>>, CreateTransactionHandler>();
+builder.Services
+    .AddScoped<IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>>, GetTransactionByIdHandler>();
+
+// Utilities
 builder.Services.AddTransient<ITransactionValidator, TransactionValidator>();
 
 

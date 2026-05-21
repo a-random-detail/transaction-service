@@ -43,14 +43,14 @@ public class TransactionWriteRepository(
         catch (PostgresException ex) 
         {
             tx.Rollback();
-            logger.LogError("Database error inserting transaction {Descrption} - State: {SqlState} Detail: {Detail}", command.Description, ex.SqlState, ex.Detail);
+            logger.LogError("Database error inserting transaction {Description} - State: {SqlState} Detail: {Detail}", command.Description, ex.SqlState, ex.Detail);
             return Result<TransactionDto>.Fail("Unable to save transaction to database.");
             
         }
         catch (Exception ex)
         {
             tx.Rollback();
-            logger.LogError("Database error inserting transaction {Descrption}", command.Description);
+            logger.LogError("Database error inserting transaction {Description}", command.Description);
             return Result<TransactionDto>.Fail("Unable to save transaction to database.");
         }
 

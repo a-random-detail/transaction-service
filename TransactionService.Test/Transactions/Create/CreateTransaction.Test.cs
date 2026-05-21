@@ -64,7 +64,7 @@ public class CreateTransaction_Test
         var transaction = responsePayload.Data;
         Assert.That(transaction, Is.Not.Null);
         Assert.That(transaction.Description, Is.EqualTo(payload.Description));
-        Assert.That(transaction.TransactionDate, Is.EqualTo(ParseStringToDateOnly(payload.TransactionDate)));
+        Assert.That(transaction.TransactionDate, Is.EqualTo(DateHelper.ParseStringToDateOnly(payload.TransactionDate)));
         Assert.That(transaction.Amount, Is.EqualTo(payload.Amount));
 
 
@@ -72,7 +72,7 @@ public class CreateTransaction_Test
         Assert.That(transaction, Is.EqualTo(persistedTransaction));
         
         Assert.That(persistedTransaction?.Description, Is.EqualTo(payload.Description));
-        Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(ParseStringToDateOnly(payload.TransactionDate)));
+        Assert.That(persistedTransaction?.TransactionDate, Is.EqualTo(DateHelper.ParseStringToDateOnly(payload.TransactionDate)));
         Assert.That(persistedTransaction?.Amount, Is.EqualTo(payload.Amount));
     }
 
@@ -135,10 +135,4 @@ public class CreateTransaction_Test
         Assert.That(responsePayload.Errors.Count, Is.EqualTo(1));
         Assert.That(responsePayload.Errors.Contains("Amount must be a positive number rounded to two decimal places (ex. 99.99)."), Is.True);
     }
-
-    private DateOnly ParseStringToDateOnly(string date)
-    {
-        return DateOnly.Parse(date);
-    }
-
 }

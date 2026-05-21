@@ -11,6 +11,6 @@ public class Result<T>
     public T? GetValue() => Success ? Value : default;
     public IReadOnlyList<string> GetErrors() => Errors;
 
-    public static Result<T> OK(T data) => new() { Value = data };
+    public static Result<T> OK(T? data) => new() { Value = data };
     public static Result<T> Fail(params string[] errors) => new() { Errors = [..errors] };
 }
