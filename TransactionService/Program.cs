@@ -1,5 +1,6 @@
 using System.Data;
 using System.Reflection;
+using System.Text.Json;
 using Dapper;
 using DbUp;
 using TransactionService.Configuration;
@@ -30,21 +31,30 @@ builder.Services.AddSingleton(appConfig);
 // Database Services
 builder.Services.AddSingleton<IWriteConnectionFactory>(new WriteConnectionFactory(appConfig.WriteConnectionString));
 builder.Services.AddSingleton<IReadConnectionFactory>(new ReadConnectionFactory(appConfig.ReadConnectionString));
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(appConfig.RedisConnectionString));
-builder.Services.AddSingleton<ICacheService, CacheService>();  
+builder.Services.AddSingleton<ICacheService<TreasuryExchangeRateRecord>>(
+    sp => new ExchangeCacheService(
+        ConnectionMultiplexer.Connect(appConfig.RedisConnectionString),
+        TimeSpan.FromHours(appConfig.ExchangeRateCacheTtlHours),
+        sp.GetRequiredService<ILogger<ExchangeCacheService>>()));
 builder.Services.AddScoped<ITransactionWriteRepository, TransactionWriteRepository>();
 builder.Services.AddScoped<ITransactionReadRepository, TransactionReadRepository>();
 
 // Handlers
 builder.Services.AddScoped<ICommandHandler<CreateTransactionCommand, Result<TransactionDto>>, CreateTransactionHandler>();
 builder.Services
-    .AddScoped<IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>>, GetTransactionByIdHandler>();
+    .AddScoped<IQueryHandler<GetTransactionByIdQuery, Result<ConvertedTransactionDto>>, GetTransactionByIdHandler>();
 
 // Utilities
 builder.Services.AddTransient<ITransactionValidator, TransactionValidator>();
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower);
+builder.Services.AddHttpClient<ITreasuryExchangeRateService, TreasuryExchangeRateService>(client =>
+{
+    client.BaseAddress = new Uri(appConfig.TreasuryApiBaseUrl);
+});
 
 
-// Handle snake case to Pascal Case field matching
+// Handle snake case to Pascal Case field matching for Dapper
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var app = builder.Build();

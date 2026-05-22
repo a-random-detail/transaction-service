@@ -24,6 +24,9 @@ public class ApplicationFactory: WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("WRITE_DB_CONNSTRING", _postgres.GetConnectionString());
         Environment.SetEnvironmentVariable("READ_DB_CONNSTRING", _postgres.GetConnectionString());
         Environment.SetEnvironmentVariable("REDIS_CONNSTRING", "localhost:6379,abortConnect=false");
+        Environment.SetEnvironmentVariable("REDIS_CONNSTRING", "localhost:6379,abortConnect=false");
+        Environment.SetEnvironmentVariable("EXCHANGE_RATE_BASE_URL",
+            "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange");
     }
 
     public async Task InitializeRespawner()

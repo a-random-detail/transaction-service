@@ -8,6 +8,8 @@
       - WRITE_DB_CONNSTRING=Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres
       - READ_DB_CONNSTRING=Host=postgres;Port=5432;Database=transactions;Username=postgres;Password=postgres
       - REDIS_CONNSTRING=redis:6379
+      - EXCHANGE_RATE_BASE_URL=https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange
+      - EXCHANGE_RATE_CACHE_TTL_HOURS=24 
     depends_on:
       postgres:
         condition: service_healthy

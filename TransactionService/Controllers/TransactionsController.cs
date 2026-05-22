@@ -14,9 +14,9 @@ namespace TransactionService.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> _createTransactionHandler;
-    private readonly IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>> _getTransactionByIdHandler;
+    private readonly IQueryHandler<GetTransactionByIdQuery, Result<ConvertedTransactionDto>> _getTransactionByIdHandler;
     private readonly ITransactionValidator _transactionValidator;
-    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler, ITransactionValidator transactionValidator, IQueryHandler<GetTransactionByIdQuery, Result<TransactionDto>> getTransactionByIdHandler)
+    public TransactionsController(ICommandHandler<CreateTransactionCommand, Result<TransactionDto>> createTransactionHandler, ITransactionValidator transactionValidator, IQueryHandler<GetTransactionByIdQuery, Result<ConvertedTransactionDto>> getTransactionByIdHandler)
     {
         _createTransactionHandler = createTransactionHandler;
         _transactionValidator = transactionValidator;
@@ -24,13 +24,13 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetTransactionById([FromRoute] Guid id)
+    public async Task<IActionResult> GetTransactionById([FromRoute] Guid id, [FromQuery] string country, [FromQuery] string currency)
     {
-        var result = await _getTransactionByIdHandler.HandleAsync(new GetTransactionByIdQuery(id));
+        var result = await _getTransactionByIdHandler.HandleAsync(new GetTransactionByIdQuery(id, country, currency));
         if (!result.Success || result.GetValue() == null)
             return NotFound();
         
-        return Ok(ApiResponse<TransactionDto>.OK(result.GetValue()));
+        return Ok(ApiResponse<ConvertedTransactionDto>.OK(result.GetValue()));
     }
     
 

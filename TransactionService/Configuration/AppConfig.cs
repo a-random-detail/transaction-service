@@ -9,4 +9,10 @@ public class AppConfig
 
     public String RedisConnectionString { get; init; } =
         Environment.GetEnvironmentVariable("REDIS_CONNSTRING") ?? string.Empty;
+    
+    public int ExchangeRateCacheTtlHours { get; init; } =
+        int.TryParse(Environment.GetEnvironmentVariable("EXCHANGE_RATE_CACHE_TTL_HOURS"), out var ttl) ? ttl : 24;
+    
+    public string TreasuryApiBaseUrl { get; init; } =
+        Environment.GetEnvironmentVariable("EXCHANGE_RATE_BASE_URL") ?? string.Empty;
 }
