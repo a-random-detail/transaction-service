@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using TransactionService.Domain.Core;
 using TransactionService.Domain.Entities;
@@ -22,16 +23,30 @@ public class TreasuryExchangeRateService(
     public async Task<Result<TreasuryExchangeRateRecord>> GetExchangeRateAsync(string country, string currency, DateOnly purchaseDate)
     {
         logger.LogInformation("Fetching from treasury api for country: {country}, currency: {currency}, for purchase date: {purchaseDate:yyyy-MM-dd}", country, currency, purchaseDate);
-        var rate = await cacheService.GetOrSetAsync(
-            CacheKey(country, currency, purchaseDate),
-            () => FetchRateFromTreasury(country, currency, purchaseDate));
+        TreasuryExchangeRateRecord? rate;
+        try
+        {
+            rate = await cacheService.GetOrSetAsync(
+                CacheKey(country, currency, purchaseDate),
+                () => FetchRateFromTreasury(country, currency, purchaseDate));
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Treasury API request failed for {Country} {Currency}", country, currency);
+            return Result<TreasuryExchangeRateRecord>.Fail(ResultType.ServerError, "Exchange rate service is unavailable.");
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Treasury API returned an unrecognized response for {Country} {Currency}", country, currency);
+            return Result<TreasuryExchangeRateRecord>.Fail(ResultType.ServerError, "Exchange rate service returned an unexpected response.");
+        }
 
         if (rate is not null) return Result<TreasuryExchangeRateRecord>.OK(rate);
-        
+
         logger.LogWarning("No exchange rate found for {Country} {Currency} within 6 months of {PurchaseDate}",
             country, currency, purchaseDate);
         return Result<TreasuryExchangeRateRecord>.Fail(ResultType.NoRecordsFound,
-        $"Unable to convert purchase to {country}-{currency} — no exchange rate available within 6 months of the purchase date.");
+            $"Unable to convert purchase to {country}-{currency} — no exchange rate available within 6 months of the purchase date.");
 
     }
     private async Task<TreasuryExchangeRateRecord?> FetchRateFromTreasury(string country, string currency, DateOnly purchaseDate)

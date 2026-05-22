@@ -73,10 +73,10 @@ public class GetTransactionById_Test
         Assert.That(exchangePayload.Country, Is.EqualTo(_ValidCountry));
         Assert.That(exchangePayload.Currency, Is.EqualTo(_ValidCurrency));
         
-        //TODO fill this in with a mock service?
-        Assert.That(exchangePayload.ExchangeRateDate, Is.InRange(_validTransaction.TransactionDate.AddMonths(-6), _validTransaction.TransactionDate));
-        Assert.That(exchangePayload.ExchangeRate, Is.GreaterThan(0));
-        Assert.That(exchangePayload.ConvertedAmount, Is.GreaterThan(0));
+        // Values taken from and derived from FakeExchangeRateService
+        Assert.That(exchangePayload.ExchangeRateDate, Is.EqualTo(new DateOnly(2026, 3, 31)));
+        Assert.That(exchangePayload.ConvertedAmount, Is.EqualTo(43.49m)); 
+        Assert.That(exchangePayload.ExchangeRate, Is.EqualTo(0.87m));
     }
 
     [Test]
@@ -113,11 +113,25 @@ public class GetTransactionById_Test
         Assert.That(responsePayload.Errors, Has.Count.EqualTo(1));
     }
 
-
     [Test]
     public async Task GetTransactionById_With_No_Matching_Id_Returns_NotFound()
     {
         var response = await _client.GetAsync(GetTransactionEndpoint(Guid.Empty, _ValidCountry, _ValidCurrency));
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+    
+    [Test]
+    public async Task GetTransactionById_Returns_500_When_Exchange_Rate_Service_Encounters_An_Error()
+    {
+        _appFactory.ExchangeRateService.Response = Result<TreasuryExchangeRateRecord>.Fail(
+            ResultType.ServerError, "Exchange rate service is unavailable.");
+
+        var response = await _client.GetAsync(GetTransactionEndpoint(_validTransaction!.Id, _ValidCountry, _ValidCurrency));
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
+
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<ConvertedTransactionDto>>();
+        Assert.That(responsePayload!.Success, Is.False);
+        Assert.That(responsePayload.Errors, Has.Count.EqualTo(1));
     }
 }

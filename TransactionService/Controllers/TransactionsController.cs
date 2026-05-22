@@ -26,6 +26,8 @@ public class TransactionsController(
             {
                 ResultType.NotFound =>
                     NotFound(ApiResponse<ConvertedTransactionDto>.Fail(result.GetErrors().ToArray())),
+                ResultType.ServerError =>
+                    StatusCode(500, ApiResponse<ConvertedTransactionDto>.Fail(result.GetErrors().ToArray())),
                 _ => UnprocessableEntity(ApiResponse<ConvertedTransactionDto>.Fail(result.GetErrors().ToArray()))
             };
         
