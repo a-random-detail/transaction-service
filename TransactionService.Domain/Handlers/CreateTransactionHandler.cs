@@ -16,10 +16,10 @@ public class CreateTransactionHandler(
         logger.LogInformation("Creating transaction {Description} on {TransactionDate}", data.Description, data.TransactionDate);
 
         var saveResult = await db.CreateAsync(data);
-        if (!saveResult.Success)
-            return Result<TransactionDto>.Fail("Unable to save transaction. Please try again later");
         
-        logger.LogInformation("Transaction created {TransactionId}", saveResult.GetValue()!.Id);
+        if (saveResult.Success)
+            logger.LogInformation("Transaction created {TransactionId}", saveResult.GetValue()!.Id);
+        
         return saveResult;
     }
 }

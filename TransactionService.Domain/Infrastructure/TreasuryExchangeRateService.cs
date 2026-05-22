@@ -30,8 +30,9 @@ public class TreasuryExchangeRateService(
         
         logger.LogWarning("No exchange rate found for {Country} {Currency} within 6 months of {PurchaseDate}",
             country, currency, purchaseDate);
-        return Result<TreasuryExchangeRateRecord>.Fail(
-            $"Unable to convert purchase to {currency} — no exchange rate available within 6 months of the purchase date.");
+        return Result<TreasuryExchangeRateRecord>.Fail(ResultType.NoRecordsFound,
+        $"Unable to convert purchase to {country}-{currency} — no exchange rate available within 6 months of the purchase date.");
+
     }
     private async Task<TreasuryExchangeRateRecord?> FetchRateFromTreasury(string country, string currency, DateOnly purchaseDate)
     {

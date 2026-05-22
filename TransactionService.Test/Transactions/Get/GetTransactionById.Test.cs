@@ -1,7 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
+using StackExchange.Redis;
+using TransactionService.Domain.Core;
 using TransactionService.Domain.Entities;
 using TransactionService.Test.Helpers;
+using ResultType = TransactionService.Domain.Core.ResultType;
 
 namespace TransactionService.Test.Transactions.Get;
 
@@ -16,6 +19,8 @@ public class GetTransactionById_Test
     private TransactionDto? _validTransaction = null;
     private string GetTransactionEndpoint(Guid id, string country, string currency) =>
         $"/transactions/{id}?country={Uri.EscapeDataString(country)}&currency={Uri.EscapeDataString(currency)}";
+
+    private string GetParameterlessTransactionEndpoint(Guid id) => $"/transactions/{id}";
     private const string _ValidCountry = "Euro Zone";
     private const string _ValidCurrency = "Euro";
 
@@ -32,6 +37,9 @@ public class GetTransactionById_Test
     [SetUp]
     public async Task SetUp()
     {
+        _appFactory.ExchangeRateService.Response = Result<TreasuryExchangeRateRecord>.OK(
+            new TreasuryExchangeRateRecord("2026-03-31", "Euro Zone", "Euro", "Euro Zone-Euro", "0.87"));
+
         var transactionRequest = new CreateTransactionRequest("valid transaction here", "2026-05-03", 49.99m);
         _validTransaction = await _testRepository.Create(transactionRequest);
     }
@@ -70,6 +78,41 @@ public class GetTransactionById_Test
         Assert.That(exchangePayload.ExchangeRate, Is.GreaterThan(0));
         Assert.That(exchangePayload.ConvertedAmount, Is.GreaterThan(0));
     }
+
+    [Test]
+    public async Task GetTransactionById_With_No_Country_Returns_400()
+    {
+        var response = await _client.GetAsync(GetTransactionEndpoint(_validTransaction!.Id, "", _ValidCurrency));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+    
+    [Test]
+    public async Task GetTransactionById_With_No_Currency_Returns_400()
+    {
+        var response = await _client.GetAsync(GetTransactionEndpoint(_validTransaction!.Id, _ValidCountry, ""));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+    
+    [Test]
+    public async Task GetTransactionById_With_Missing_Parameters_Returns_400()
+    {
+        var response = await _client.GetAsync(GetParameterlessTransactionEndpoint(_validTransaction!.Id));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task GetTransactionById_Returns_422_With_Appropriate_Error_Message_When_No_Exchange_Records()
+    {
+        _appFactory.ExchangeRateService.Response = Result<TreasuryExchangeRateRecord>.Fail(ResultType.NoRecordsFound,
+            $"Unable to convert purchase to {_ValidCountry}-{_ValidCurrency } — no exchange rate available within 6 months of the purchase date.");
+        var response = await _client.GetAsync(GetTransactionEndpoint(_validTransaction!.Id, _ValidCountry, _ValidCurrency));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
+
+        var responsePayload = await response.Content.ReadFromJsonAsync<ApiResponseDto<ConvertedTransactionDto>>();
+        Assert.That(responsePayload!.Success, Is.False);
+        Assert.That(responsePayload.Errors, Has.Count.EqualTo(1));
+    }
+
 
     [Test]
     public async Task GetTransactionById_With_No_Matching_Id_Returns_NotFound()

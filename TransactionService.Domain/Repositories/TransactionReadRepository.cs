@@ -38,7 +38,7 @@ public class TransactionReadRepository (
         catch (Exception ex)
         {
             logger.LogError("Database error fetching transaction with id: {Id} - Message: {Message}", query.Id, ex.Message);
-            return Result<TransactionDto>.Fail("Unable to fetch transaction.");
+            return Result<TransactionDto>.Fail(ResultType.ServerError, "Unable to fetch transaction.");
         }
     }
 }

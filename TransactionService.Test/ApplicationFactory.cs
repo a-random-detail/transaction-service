@@ -6,6 +6,7 @@ using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
 using TransactionService.Domain.Infrastructure;
+using TransactionService.Test.Helpers;
 
 namespace TransactionService.Test;
 
@@ -17,6 +18,7 @@ public class ApplicationFactory: WebApplicationFactory<Program>
 
     private Respawner _respawner = null!;
     public string ConnectionString => _postgres.GetConnectionString();
+    public FakeExchangeRateService ExchangeRateService { get; } = new();
 
     public async Task StartAsync()
     {
@@ -51,10 +53,11 @@ public class ApplicationFactory: WebApplicationFactory<Program>
         {
             services.RemoveAll<IWriteConnectionFactory>();
             services.RemoveAll<IReadConnectionFactory>();
+            services.RemoveAll<ITreasuryExchangeRateService>();
 
             services.AddSingleton<IWriteConnectionFactory>(new WriteConnectionFactory(_postgres.GetConnectionString()));
             services.AddSingleton<IReadConnectionFactory>(new ReadConnectionFactory(_postgres.GetConnectionString()));
-            
+            services.AddSingleton<ITreasuryExchangeRateService>(ExchangeRateService);
         });
     }
 }

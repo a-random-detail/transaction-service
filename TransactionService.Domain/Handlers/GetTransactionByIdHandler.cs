@@ -21,7 +21,7 @@ public class GetTransactionByIdHandler(
         if (!transactionResult.Success || transactionResult.GetValue() is null)
         {
             logger.LogWarning("Transaction with id {Id} not found", query.Id);
-            return Result<ConvertedTransactionDto>.Fail("Transaction not found.");
+            return Result<ConvertedTransactionDto>.Fail(ResultType.NotFound, "Transaction not found.");
         }
 
         var transaction = transactionResult.GetValue()!;
@@ -31,12 +31,12 @@ public class GetTransactionByIdHandler(
             query.Country, query.Currency, transaction.TransactionDate);
 
         if (!rateResult.Success)
-            return Result<ConvertedTransactionDto>.Fail(rateResult.GetErrors().ToArray());
+            return Result<ConvertedTransactionDto>.Fail(rateResult.Type, rateResult.GetErrors().ToArray());
 
         var rate = decimal.Parse(rateResult.GetValue()!.ExchangeRate);
         var converted = Math.Round(transaction.Amount * rate, 2, MidpointRounding.AwayFromZero);
 
-        return Result<ConvertedTransactionDto>.OK(new ConvertedTransactionDto(
+        return Result<ConvertedTransactionDto>.OK(new(
             transaction.Id,
             transaction.Description,
             transaction.TransactionDate,
